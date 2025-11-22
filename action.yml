@@ -32,14 +32,21 @@ runs:
   - uses: astral-sh/setup-uv@main
     with:
       version: "latest"
-  - if: ${{ inputs.extras != '' }}
-    run: uv sync --extra "${{inputs.extras}}"
-    working-directory: ${{inputs.working-directory}}
+
+  - name: Sync dependencies
     shell: bash
-  - if: ${{ inputs.extras == '' }}
-    run: uv sync --all-extras
     working-directory: ${{inputs.working-directory}}
-    shell: bash
+    run: |
+      EXTRA_ARGS=""
+      for extra in ${{ inputs.extras }}; do
+        EXTRA_ARGS="$EXTRA_ARGS --extra $extra"
+      done
+      if [ -z "${{ inputs.extras }}" ]; then
+        uv sync --all-extras
+      else
+        uv sync $EXTRA_ARGS
+      fi  
+
   - if: ${{ inputs.test-entry-point != '' }}
     run: uv run ${{ inputs.test-entry-point }}
     working-directory: ${{ inputs.tests }}
