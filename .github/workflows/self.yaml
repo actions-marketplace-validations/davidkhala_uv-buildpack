@@ -1,0 +1,38 @@
+name: self test
+on: 
+  push:
+  workflow_dispatch:
+jobs:
+    os:
+        strategy:
+          matrix:
+            os: [ubuntu-latest, windows-latest, macos-latest]
+        runs-on: ${{matrix.os}}
+        steps:
+        - uses: actions/checkout@main
+        - uses: davidkhala/uv-buildpack@main
+          with:
+            working-directory: .github/build
+    extras:
+        runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            extras: ['', http_request sql, http_request]
+        steps:
+        - uses: actions/checkout@main
+        - uses: davidkhala/uv-buildpack@main
+          with:
+            working-directory: .github/build
+            extras: ${{matrix.extras}}
+    tests:
+        runs-on: ubuntu-latest
+        strategy:
+          matrix:
+            test-command: [pytest, 'python test_.py']
+        steps:
+        - uses: actions/checkout@main
+        - uses: davidkhala/uv-buildpack@main
+          with:
+            working-directory: .github/with-test
+            test-entry-point: ${{matrix.test-command}}
+            tests: .github/with-test/tests
